@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+body { font-family: 'Poppins', sans-serif; background: #f0f2f5; margin: 0; padding-top: 100px; }
+.header { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 0 0 30px 30px; }
+.container { max-width: 600px; margin: auto; padding: 15px; }
+#loginBox { background: white; padding: 30px; border-radius: 20px; text-align: center; margin-top: 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; box-sizing: border-box; }
+button { background: #1e3c72; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; }
+#portal { display: none; }
+.card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 15px; position: relative; border-left: 8px solid #1e3c72; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+.class-badge { position: absolute; top: 15px; right: 15px; background: #ff4757; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; }
+.btn-read { background: #1e3c72; color: white; text-decoration: none; display: block; text-align: center; padding: 10px; border-radius: 10px; margin-top: 10px; font-weight: bold; }
+#loader { text-align: center; margin-top: 20px; font-weight: bold; color: #1e3c72; }
+</style>
+</head>
+<body>
+
+<div id="loginSection" class="container">
+<div id="loginBox">
+<h2 style="color:#1e3c72;">🔒 School Login</h2>
+<p>Enter password to proceed</p>
+<input type="password" id="passInput" placeholder="Enter School Password">
+<button onclick="login()">Access Portal</button>
+</div>
+</div>
+
+<div id="portal">
+<div class="header">
+<h1>Study Hub</h1>
+<p>IQRA PUBLIC SCHOOL - Student Portal</p>
+</div>
+<div class="container">
+<input type="text" id="searchInput" onkeyup="filterData()" placeholder="Search Class, Subject, Topic...">
+<div id="loader" style="display:none;">Loading Materials...</div>
+<div id="content"></div>
+</div>
+</div>
+
+<script>
+// YAHAN APNA WEB APP URL PASTE KAREIN
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6op2sNh71dVz8J-sR-pTgVgO-TZp6i4tcH-B3CnWmrEA0wN2QMI2X4GsIidtFxfSS/exec";
+let masterData = [];
+
+function login() {
+  let pass = document.getElementById('passInput').value;
+  if(!pass) return Swal.fire('Wait!', 'Password likhiye!', 'warning');
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "checkLogin", pass: pass })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if(res.success) {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('portal').style.display = 'block';
+      loadData();
+    } else {
+      Swal.fire('Error!', 'Galat Password!', 'error');
+    }
+  });
+}
+
+function loadData() {
+  document.getElementById('loader').style.display = 'block';
+  fetch(WEB_APP_URL + "?action=getMaterials")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById('loader').style.display = 'none';
+      masterData = data;
+      render(masterData);
+    });
+}
+
+function render(list) {
+  let html = "";
+  if(list.length === 0) html = "<p style='text-align:center;'>No material found.</p>";
+  list.forEach(item => {
+    html += `<div class="card">
+    <div class="class-badge">Class ${item.className}</div>
+    <div style="font-size:12px; color:#1e3c72; font-weight:600;">${item.subject}</div>
+    <h3 style="margin:5px 0;">${item.topic}</h3>
+    <a href="${item.link}" target="_blank" class="btn-read">View File 📖</a>
+    </div>`;
+  });
+  document.getElementById('content').innerHTML = html;
+}
+
+function filterData() {
+  let q = document.getElementById('searchInput').value.toLowerCase();
+  let filtered = masterData.filter(i => 
+    i.className.toString().includes(q) || 
+    i.subject.toLowerCase().includes(q) || 
+    i.topic.toLowerCase().includes(q)
+  );
+  render(filtered);
+}
+</script>
+</body>
+</html>
