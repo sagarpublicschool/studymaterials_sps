@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+body { font-family: sans-serif; background: #f4f7f6; padding-top: 100px; margin: 0; }
+.form-box { max-width: 400px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-top: 6px solid #27ae60; }
+h2 { color: #1e3c72; text-align: center; }
+input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+button { background: #27ae60; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+</style>
+</head>
+<body>
+
+<div class="form-box">
+<h2>Teacher's Panel</h2>
+<p style="text-align:center; font-size:12px;">Add New Study Material 🚀</p>
+<input type="number" id="tClass" placeholder="Class (e.g. 5)">
+<input type="text" id="tSub" placeholder="Subject (e.g. Zoology)">
+<input type="text" id="tTopic" placeholder="Topic Name">
+<input type="text" id="tLink" placeholder="Drive File/Video Link">
+<button onclick="submitData()">Upload to Portal 🚀</button>
+</div>
+
+<script>
+// YAHAN APNA WEB APP URL PASTE KAREIN
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx6op2sNh71dVz8J-sR-pTgVgO-TZp6i4tcH-B3CnWmrEA0wN2QMI2X4GsIidtFxfSS/exec";
+
+function submitData() {
+  let data = {
+    class: document.getElementById('tClass').value,
+    subject: document.getElementById('tSub').value,
+    topic: document.getElementById('tTopic').value,
+    link: document.getElementById('tLink').value
+  };
+
+  if(!data.class || !data.subject || !data.link) {
+    return Swal.fire('Rukiye!', 'Sari jankari bharna zaroori hai.', 'warning');
+  }
+
+  Swal.fire({
+    title: 'Uploading...',
+    text: 'Material Portal par add ho raha hai.',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+
+  fetch(WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "addMaterial", data: data })
+  })
+  .then(res => res.json())
+  .then(res => {
+    Swal.fire({
+      icon: 'success',
+      title: 'Success!',
+      text: 'Study material live ho gaya hai.',
+      confirmButtonColor: '#27ae60'
+    }).then(() => {
+      document.querySelectorAll('input').forEach(i => i.value = "");
+    });
+  })
+  .catch(err => {
+    Swal.fire('Error', 'Upload nahi ho paya.', 'error');
+  });
+}
+</script>
+</body>
+</html>
